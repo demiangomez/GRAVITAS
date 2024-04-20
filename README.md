@@ -1,4 +1,4 @@
-# gravitas
+# GRAVITAS
 A Matlab package to compute the gravity differences between stations of multiple gravity lines, and combine them into a network adjustment
 
 Authors: Kevin Ahlgren, Demián D. Gómez, Michael G. Bevis, Franco S. Sobrero, Jacob Heck, Arturo Echalar, Dana J. Caccamise II, Eric Kendrick, Paola Montenegro, Ariele Batistti, Lizeth Contreras Choque, Juan Carlos Catari, Roger Tinta Sallico, and Hernan Guerra Trigo
