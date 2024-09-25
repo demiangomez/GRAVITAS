@@ -49,3 +49,4 @@ GRAVITAS requires the following dependencies:
     • m_map v1.4j or above (https://www.eoas.ubc.ca/~rich/map.html)
     • Earth Gravitational Model EGM2008 (https://earth-info.nga.mil/index.php?dir=wgs84&action=wgs84) 
     • NRCan-CGS GPSPACE and its dependencies to obtain GNSS Precise Point Positioning (PPP) solutions. (https://github.com/pomath/GPSPACE)
+    • KML Toolbox for MATLAB, by Rafael Oliveira (2024). (https://github.com/theolivenbaum/kml-toolbox)

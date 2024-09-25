@@ -46,6 +46,10 @@ end
 
 % --- Executes just before fg_main is made visible.
 function fg_main_OpeningFcn(hObject, eventdata, handles, varargin)
+
+    % Center the figure on the top of the screen
+    movegui(hObject, 'center');
+
     % This function has no output args, see OutputFcn.
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB

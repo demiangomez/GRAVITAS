@@ -22,7 +22,7 @@ function varargout = fg_edit_line(varargin)
 
 % Edit the above text to modify the response to help fg_edit_line
 
-% Last Modified by GUIDE v2.5 14-Dec-2017 10:31:44
+% Last Modified by GUIDE v2.5 14-Sep-2024 13:36:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,6 +46,10 @@ end
 
 % --- Executes just before fg_edit_line is made visible.
 function fg_edit_line_OpeningFcn(hObject, eventdata, handles, varargin)
+    
+    % Center the figure on the screen
+    movegui(hObject, 'center');
+
     % This function has no output args, see OutputFcn.
     % hObject    handle to figure
     % eventdata  reserved - to be defined in a future version of MATLAB
@@ -339,7 +343,7 @@ function cmdOpenLine_Callback(hObject, eventdata, handles)
     [hObj, ~, cancel] = SaveLine(hObj, line, handles);
     
     if ~cancel
-        [line, sel] = listdlg('PromptString', 'Select an instrument', 'SelectionMode','single','ListString',{hObj.lines.line_filename});
+        [line, sel] = listdlg('PromptString', 'Select a line', 'SelectionMode','single','ListString',{hObj.lines.line_filename});
 
         if sel
             hObj.selected_line = line;
@@ -1366,3 +1370,133 @@ function cmdLoad_Callback(hObject, eventdata, handles)
         end
     end
     
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over cmdOpenLine.
+%function cmdOpenLine_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to cmdOpenLine (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+
+
+
+% --- Executes on button press in cmdLoadFromTablet.
+function cmdLoadFromTablet_Callback(hObject, eventdata, handles)
+    % hObject    handle to cmdLoadFromTablet (see GCBO)
+    % eventdata  reserved - to be defined in a future version of MATLAB
+    % handles    structure with handles and user data (see GUIDATA)
+    
+    % Franco S. Sobrero, Ohio State University, Sept 2024
+    
+    % show open file dialog box
+    % [FileName, PathName] = uigetfile('*.xls','Select an XLS file with the approriate format');
+    [FileName, PathName] = uigetfile({'*.xls;*.xlsx', 'Excel Files (*.xls, *.xlsx)'}, 'Select an Excel file with the appropriate format');
+   
+    if isequal(FileName, 0)                                                             % If the user canceled the file selection
+        return;
+    else
+        FullFilePath = fullfile(PathName, FileName);
+        [~, sheets] = xlsfinfo(FullFilePath);    
+        
+        if strcmp(sheets{1}, 'LINE-STRUCT')                                             % If the file comes from the tablet app Log4G, load it
+            hObj = guidata(hObject);
+            currentLine = GetLine(hObj);                                                % Get the data from any already-loaded lines
+            selectedLines = fg_load_from_tablet(FileName, PathName, currentLine);       % Call the function
+                    
+            for ii = 1:length(selectedLines)
+                % Check if this line name is present in an even number of sheets (forward and reverse)
+                isPresent = cellfun(@(x) ~isempty(strfind(x, selectedLines{ii})), sheets);
+
+                if mod(sum(isPresent),2) ~= 0
+                    warndlg('The number of sheets should be even: a forward and reverse for each instrument.')
+                else
+
+                    for jj = 2:length(sheets)                                   % Ignore sheet 1, which is LINE-STRUCT
+                        if ~isempty(strfind(sheets{jj}, selectedLines{ii}))     % If the Line Name is present in the sheet name, then load the data in this sheet
+                            
+                            sheet_data = readtable(FullFilePath, 'Sheet', jj, 'VariableNamingRule', 'preserve');
+                            benchmarks = strtrim(lower(sheet_data.Var1));
+                            date = cellstr(strrep(extractBefore(sheet_data.Var2, '.'), 'T', ' ')); % Remove the part after the '.' and replace 'T' with a space
+                            
+                            % if ~isnumeric(sheet_data.Var9)
+                            %     sheet_data.Var9 = zeros(size(sheet_data.Var9));
+                            % end
+
+                            % Extract gravimeter name, and line Direction from sheet name (text between the second appearance of "-" and ("R" or "F")
+                            % !!! IMPORTANT !!! Gravimeters' names cannot include the letters "R" of "F"
+                            extract_info = regexp(sheets{jj}, '(?:[^-]*-){2}([^R|F]+)(R|F)', 'tokens');
+                            
+                            if ~isempty(extract_info)
+                                gravime = extract_info{1,1}{1,1};
+                                dir = extract_info{1,1}{1,2};
+                            else
+                                warndlg(['Invalid sheet name: "', sheets{jj}, '". The correct format is: LINE-{line identifier}-g{gravimeter name}{R/F}{line number (e.g., 1, 2, 3,...)}. Note: The letter "R" or "F" must be capitalized.'], 'Invalid Excel Sheet Name');
+                                return
+                            end
+    
+                            if strcmpi(dir, 'f')                            % strcmpi compares strings ignoring case
+                                direction = CssDirections.forward;
+                            else
+                                direction = CssDirections.reverse;
+                            end
+                            
+                            instrument = hObj.instruments(ismember({hObj.instruments.name}, lower(gravime)));
+                            
+                            if isempty(instrument)
+                                warndlg(['Could not find instrument name ' lower(gravime)])
+                                return
+                            end
+                            
+                            for j = 1:size(sheet_data,1)                    % Loop through the observations
+                                line = GetLine(hObj);                       % Get the current line
+                                if length(benchmarks{j}) ~= 4
+                                    warndlg(['Invalid benchmark name ' lower(benchmarks{j})])
+                                    return
+                                end
+                            
+                                % In older versions of Log4G, the app had a bug which exported the Offsets (Var.8) as '????'. In this case, we replace it by 0
+                                if isnumeric(sheet_data.Var8)
+                                    offs = sheet_data.Var8(j);
+                                else 
+                                    offs = 0;
+                                end
+
+                                % If the benchmark exists in the line, get the reference to it rather than a copy from fg_find_benchmark
+                                if CssBenchmark.exists(line.benchmarks, benchmarks{j})
+                                    benchmark = CssBenchmark.ReturnBenchmark(line.benchmarks, benchmarks{j});
+                                else
+                                    % Pull the benchmark from the list of all benchmarks
+                                    benchmark = CssBenchmark.ReturnBenchmark(hObj.database.benchmarks, benchmarks{j});
+                                end
+                               
+                                if isempty(benchmark)
+                                    % DDG Jun 7 2018: load benchmark coordinates from Excel file and add it
+                                    benchmark = CssBenchmark(benchmarks{j}, sheet_data.Var3(j), sheet_data.Var4(j), 0, offs);
+                                    UpdateBenchmarks(hObj.project, benchmark)
+                                end
+                                
+                                ts = datetime(date{j});
+            
+                                new_obs = CssObservation(benchmark, direction, year(ts), month(ts), day(ts), hour(ts), minute(ts), instrument, sheet_data{j, 5:7});
+            
+                                line = line.AddObservation(new_obs);
+            
+                                % Save the line back to the corresponding variable
+                                hObj = Update_hObj_Sync(hObj, line, handles);
+                            end     
+                            guidata(hObject, hObj);
+                        end
+                    end
+                end
+            end
+        else
+            % If the first sheet is not LINE-STRUCT, display an error message in a separate window
+            errordlg('You must select an XLS file exported by the app Log4G. The first sheet must be "LINE-STRUCT"', 'Invalid File', 'modal');
+            % Abort the function
+            return;
+        end
+    end
+
