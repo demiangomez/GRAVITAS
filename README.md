@@ -1,4 +1,7 @@
 # GRAVITAS
+## A Matlab package to compute the gravity differences between stations of multiple gravity lines, and combine them into a network adjustment
+### Authors: Demián D. Gómez, Kevin Ahlgren, Michael G. Bevis
+
 A Matlab package to compute the gravity differences between stations of multiple gravity lines, and combine them into a network adjustment
 
 Authors: Kevin Ahlgren, Demián D. Gómez, Michael G. Bevis, Franco S. Sobrero, Jacob Heck, Arturo Echalar, Dana J. Caccamise II, Eric Kendrick, Paola Montenegro, Ariele Batistti, Lizeth Contreras Choque, Juan Carlos Catari, Roger Tinta Sallico, and Hernan Guerra Trigo
@@ -50,3 +53,6 @@ GRAVITAS requires the following dependencies:
     • Earth Gravitational Model EGM2008 (https://earth-info.nga.mil/index.php?dir=wgs84&action=wgs84) 
     • NRCan-CGS GPSPACE and its dependencies to obtain GNSS Precise Point Positioning (PPP) solutions. (https://github.com/pomath/GPSPACE)
     • KML Toolbox for MATLAB, by Rafael Oliveira (2024). (https://github.com/theolivenbaum/kml-toolbox)
+
+Related article: 
+"A robust approach to terrestrial relative gravity measurements and adjustment of gravity networks" (2024). Sobrero, F.S., Ahlgren, K., Bevis, M.G., Gómez, D.D., Heck, J., Echalar, A., Caccamise, D.J., Kendrick, E., Montenegro, P., Batistti, A., Contreras Choque, L., Catari, J.C., Tinta Sallico, R., Guerra Trigo, H., Journal of Geodesy 98, 86. https://doi.org/10.1007/s00190-024-01891-w

@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Gómez"
+  given-names: "Demián"
+  orcid: "https://orcid.org/0000-0002-5276-581X"
+- family-names: "Ahlgren"
+  given-names: "Kevin"
+  orcid: "https://orcid.org/0000-0003-0453-6323"
+- family-names: "Bevis"
+  given-names: "Michael"
+  orcid: "https://orcid.org/0000-0003-0977-7708"
+title: "GRAVITAS"
+version: 1.1.0
+date-released: 2024-05-06
+url: "https://github.com/demiangomez/GRAVITAS"
